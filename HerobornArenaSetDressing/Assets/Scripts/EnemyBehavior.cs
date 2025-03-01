@@ -19,6 +19,10 @@ public class EnemyBehavior : MonoBehaviour
     public Transform player;
 
     private int _lives = 3;
+
+    public AudioClip[] soundClips;
+    private AudioSource audioSource;
+
     public int EnemyLives
     {
         get {  return _lives; }
@@ -41,6 +45,7 @@ public class EnemyBehavior : MonoBehaviour
         player = GameObject.Find("Player").transform;
         InitializePatrolRoute();
         MoveToNextPatrolLocation();
+        audioSource = GetComponent<AudioSource>();
     }
 
     void MoveToNextPatrolLocation()
@@ -65,6 +70,15 @@ public class EnemyBehavior : MonoBehaviour
     {
         if (other.name == "Player")
         {
+            if (other.CompareTag("Player"))
+            {
+                if (soundClips.Length > 0)
+                {
+                    int randomIndex = Random.Range(0, soundClips.Length);
+                    audioSource.clip = soundClips[randomIndex];
+                    audioSource.Play();
+                }
+            }
             agent.destination = player.position;
             GameBehavior.detected = "DETECTED";
         }
@@ -73,6 +87,7 @@ public class EnemyBehavior : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
+            audioSource.Stop();
             GameBehavior.detected = "HIDDEN";
         }
     }

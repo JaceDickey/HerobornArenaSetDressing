@@ -25,11 +25,16 @@ public class PlayerBehavior : MonoBehaviour
     private float hInput;
     private Rigidbody _rb;
 
+    public bool stopped = true;
+    public bool walking = false;
     public bool sprinting = false;
     public static int sprint = 1000;
     public static int sprintMax = 1000;
     public int sprintMin = 0;
     public static bool sprintBoost = false;
+
+    public AudioSource walkSound;
+    public AudioSource runSound;
 
     public EnemyBehavior enemy;
     private GameBehavior _gameManager;
@@ -40,6 +45,7 @@ public class PlayerBehavior : MonoBehaviour
         jump = new Vector3(0.0f, 2.0f, 0.0f);
 
         _gameManager = GameObject.Find("Game Manager").GetComponent<GameBehavior>();
+
     }
 
     void Update()
@@ -68,12 +74,51 @@ public class PlayerBehavior : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            sprinting = true;
+            if (Input.GetKey(KeyCode.W))
+            {
+                sprinting = true;
+                walking = false;
+                walkSound.Stop();
+                runSound.Play();
+            }
         }
 
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
+            if (Input.GetKey(KeyCode.W))
+            {
+                sprinting = false;
+                walking = true;
+                runSound.Stop();
+                walkSound.Play();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                sprinting = true;
+                walking = false;
+                walkSound.Stop();
+                runSound.Play();
+            }
+            else
+            {
+                runSound.Stop();
+                walkSound.Play();
+                walking = true;
+                sprinting = false;
+            }
+        }
+
+        if (Input.GetKeyUp(KeyCode.W))
+        {
             sprinting = false;
+            walking = false;
+            stopped = true;
+            walkSound.Stop();
+            runSound.Stop();
         }
 
         if (sprinting == true)
@@ -101,6 +146,7 @@ public class PlayerBehavior : MonoBehaviour
                 sprint++;
             }
         }
+
         GameBehavior.staminaText = sprint;
     }
 
@@ -137,7 +183,10 @@ public class PlayerBehavior : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Floor"))
         {
-            isGrounded = true;
+            if (isGrounded == false)
+            {
+                isGrounded = true;
+            }
         }
         if (collision.gameObject.CompareTag("Enemy") == true)
         {
